@@ -5,7 +5,7 @@ def tanH(x: float):
     return 2 / (1 + np.exp(-2 * x)) -1
 
 def deriv_tanH(x: float):
-    # Derivative of tanH: f'(x) = f(x) * (1 - f(x))
+    # Derivative of tanH: f'(x) = (1 - f(x)^2)
     fx = tanH(x)
     return 1 - fx * fx
 
