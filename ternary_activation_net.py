@@ -4,10 +4,19 @@ def tanH(x: float):
     # tanH activation function: f(x) = 2 / (1 + e^(-2x)) -1
     return 2 / (1 + np.exp(-2 * x)) -1
 
+def ternF(x: float):
+    return 1.5 * tanH(x) + 0.5 * tanH(-3 * x)
+
+def secH(x: float):
+    return (2 * np.exp(x)) / (np.exp(2 * x) + 1)
+
 def deriv_tanH(x: float):
     # Derivative of tanH: f'(x) = (1 - f(x)^2)
     fx = tanH(x)
     return 1 - fx * fx
+
+def deriv_ternF(x):
+    return -1 * ((3 * (secH(3 * x) * secH(3 * x) - secH(x) * secH(x))) / 2)
 
 def mse_loss(y_true, y_pred):
     # y_true and y_pred are numpy arrays of the same length.
@@ -22,7 +31,7 @@ class TwoNeuron:
     def feedforward(self, x):
         # print(f'x{x}')
         # print(f'x[0]{x[0]}')
-        out = tanH(self.w1 * x[0] + self.w2 * x[1] + self.b)
+        out = ternF(self.w1 * x[0] + self.w2 * x[1] + self.b)
         # print(f'out ${self, out}')
         return out
 
@@ -31,7 +40,7 @@ class TwoNeuron:
         return out
 
     def train(self, learn_rate, d_L_d_ypred, d_ypred_d_neuron, x):
-        d_neuron = deriv_tanH(self.feed_no_activation(x))
+        d_neuron = deriv_ternF(self.feed_no_activation(x))
         d_neuron_d_w1 = x[0] * d_neuron
         d_neuron_d_w2 = x[1] * d_neuron
         d_neuron_d_b = d_neuron
@@ -52,13 +61,13 @@ class NewNetwork:
         return o1
 
     def train(self, data, all_y_trues):
-        learn_rate = 0.1
-        epochs = 2000
+        learn_rate = 0.2
+        epochs = 1000
         for epoch in range(epochs):
             for x, y_true in zip(data, all_y_trues):
                 d_L_d_ypred = -2 * (y_true - self.feedforward(x))
-                d_ypred_d_h1 = self.o1.w1 * deriv_tanH(self.o1.feed_no_activation(x))
-                d_ypred_d_h2 = self.o1.w2 * deriv_tanH(self.o1.feed_no_activation(x))
+                d_ypred_d_h1 = self.o1.w1 * deriv_ternF(self.o1.feed_no_activation(x))
+                d_ypred_d_h2 = self.o1.w2 * deriv_ternF(self.o1.feed_no_activation(x))
                 
                 self.h1.train(learn_rate, d_L_d_ypred, d_ypred_d_h1, x)
                 self.h2.train(learn_rate, d_L_d_ypred, d_ypred_d_h2, x)
@@ -81,18 +90,24 @@ data = np.array([
     [2, 12],
     [-1, -7],
     [1, -12],
+    [-12, 1],
+    [5, 20],
+    [0, -2],
 ])
 all_y_trues = np.array([ # return index of first positive or -1
-    0,
-    -1,
-    1,
-    0,
-    -1,
-    0,
+    0, # [6,0]
+    -1, # [0,0]
+    1, # [-4,1]
+    0, # [2,12]
+    -1, # [-1,-7]
+    0, # [1,-12]
+    1, # [-12,1]
+    0, #[5, 20]
+    -1, # [0,-2]
 ])
 
 test = np.array([
-    [1, -8],
+    [6, 0],
     [-1, 4],
     [-3, -5],
     [5, -1],
@@ -105,4 +120,3 @@ new_net = NewNetwork()
 new_net.train(data, all_y_trues)
 
 new_net.test(test)
-
